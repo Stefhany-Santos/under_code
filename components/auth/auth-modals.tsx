@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, UserRole } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Mail, 
@@ -16,6 +14,7 @@ import {
   EyeOff, 
   Loader2, 
   ArrowRight,
+  Check,
 } from 'lucide-react';
 
 interface AuthModalsProps {
@@ -25,14 +24,35 @@ interface AuthModalsProps {
   onRegisterOpenChange: (open: boolean) => void;
 }
 
+// Cloudflare Turnstile Mock Widget
+function TurnstileWidget() {
+  return (
+    <div className="mx-auto flex h-[65px] w-full max-w-[300px] items-center gap-3 rounded-md border border-zinc-700 bg-[#222222] px-3">
+      <div className="flex h-6 w-6 items-center justify-center rounded border border-zinc-600 bg-zinc-800">
+        <Check className="h-4 w-4 text-emerald-500" />
+      </div>
+      <div className="flex-1">
+        <p className="text-xs text-zinc-400">Verifying you are human.</p>
+        <p className="text-[10px] text-zinc-600">This may take a few seconds.</p>
+      </div>
+      <div className="flex flex-col items-end">
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#F6821F"/>
+          <path d="M2 17L12 22L22 17" stroke="#F6821F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 12L12 17L22 12" stroke="#F6821F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <span className="text-[8px] text-zinc-600">Cloudflare</span>
+      </div>
+    </div>
+  );
+}
+
 export function AuthModals({ 
   loginOpen, 
   registerOpen, 
   onLoginOpenChange, 
   onRegisterOpenChange 
 }: AuthModalsProps) {
-  const router = useRouter();
-  const { login } = useAuth();
   const { toast } = useToast();
   
   // Login state
@@ -49,40 +69,19 @@ export function AuthModals({
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Redirect state
-  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
+  const resetLoginForm = () => {
+    setLoginEmail('');
+    setLoginPassword('');
+    setShowLoginPassword(false);
+  };
 
-  // Handle redirect after state update
-  useEffect(() => {
-    if (pendingRedirect) {
-      router.push(pendingRedirect);
-      setPendingRedirect(null);
-    }
-  }, [pendingRedirect, router]);
-
-  const handleSimulateLogin = useCallback((role: UserRole) => {
-    setIsLoggingIn(true);
-    setTimeout(() => {
-      login(role);
-      setIsLoggingIn(false);
-      onLoginOpenChange(false);
-      setLoginEmail('');
-      setLoginPassword('');
-      setShowLoginPassword(false);
-      toast({
-        title: 'Login realizado com sucesso!',
-        description: role === 'admin' 
-          ? 'Bem-vindo ao painel administrativo.' 
-          : 'Bem-vindo de volta!',
-      });
-      // Set pending redirect instead of calling router directly
-      if (role === 'admin') {
-        setPendingRedirect('/admin');
-      } else if (role === 'customer') {
-        setPendingRedirect('/dashboard');
-      }
-    }, 800);
-  }, [login, onLoginOpenChange, toast]);
+  const resetRegisterForm = () => {
+    setRegisterName('');
+    setRegisterEmail('');
+    setRegisterPassword('');
+    setRegisterConfirmPassword('');
+    setShowRegisterPassword(false);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +93,17 @@ export function AuthModals({
       });
       return;
     }
-    handleSimulateLogin('customer');
+    
+    setIsLoggingIn(true);
+    setTimeout(() => {
+      setIsLoggingIn(false);
+      onLoginOpenChange(false);
+      resetLoginForm();
+      toast({
+        title: 'Autenticacao pendente',
+        description: 'Integracao com back-end em desenvolvimento.',
+      });
+    }, 1000);
   };
 
   const handleRegister = (e: React.FormEvent) => {
@@ -118,19 +127,13 @@ export function AuthModals({
     
     setIsRegistering(true);
     setTimeout(() => {
-      login('customer');
       setIsRegistering(false);
       onRegisterOpenChange(false);
-      setRegisterName('');
-      setRegisterEmail('');
-      setRegisterPassword('');
-      setRegisterConfirmPassword('');
-      setShowRegisterPassword(false);
+      resetRegisterForm();
       toast({
-        title: 'Conta criada com sucesso!',
-        description: 'Bem-vindo a Under Code!',
+        title: 'Cadastro pendente',
+        description: 'Integracao com back-end em desenvolvimento.',
       });
-      setPendingRedirect('/dashboard');
     }, 1000);
   };
 
@@ -168,6 +171,7 @@ export function AuthModals({
                   placeholder="seu@email.com"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
+                  autoComplete="email"
                   className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
               </div>
@@ -191,6 +195,7 @@ export function AuthModals({
                   placeholder="********"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
+                  autoComplete="current-password"
                   className="border-zinc-800 bg-zinc-900 pl-10 pr-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
                 <button
@@ -203,6 +208,9 @@ export function AuthModals({
               </div>
             </div>
 
+            {/* Cloudflare Turnstile Widget */}
+            <TurnstileWidget />
+
             <Button 
               type="submit" 
               className="w-full bg-white font-medium text-black hover:bg-zinc-200"
@@ -211,7 +219,7 @@ export function AuthModals({
               {isLoggingIn ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Entrando...
+                  Autenticando...
                 </>
               ) : (
                 <>
@@ -233,33 +241,6 @@ export function AuthModals({
                 Criar conta
               </button>
             </p>
-          </div>
-
-          {/* Dev simulation */}
-          <div className="mt-4 rounded-lg border border-dashed border-zinc-800 p-3">
-            <p className="mb-2 text-center text-xs text-zinc-600">Dev Mode</p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="flex-1 border-zinc-800 bg-transparent text-xs text-zinc-400 hover:bg-zinc-900"
-                onClick={() => handleSimulateLogin('customer')}
-                disabled={isLoggingIn}
-              >
-                Cliente
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="flex-1 border-zinc-800 bg-transparent text-xs text-zinc-400 hover:bg-zinc-900"
-                onClick={() => handleSimulateLogin('admin')}
-                disabled={isLoggingIn}
-              >
-                Admin
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -286,6 +267,7 @@ export function AuthModals({
                   placeholder="Seu nome"
                   value={registerName}
                   onChange={(e) => setRegisterName(e.target.value)}
+                  autoComplete="name"
                   className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
               </div>
@@ -301,6 +283,7 @@ export function AuthModals({
                   placeholder="seu@email.com"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
+                  autoComplete="email"
                   className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
               </div>
@@ -317,6 +300,7 @@ export function AuthModals({
                     placeholder="******"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
+                    autoComplete="new-password"
                     className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                   />
                 </div>
@@ -331,6 +315,7 @@ export function AuthModals({
                     placeholder="******"
                     value={registerConfirmPassword}
                     onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
                     className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                   />
                 </div>
@@ -345,6 +330,9 @@ export function AuthModals({
               {showRegisterPassword ? 'Ocultar senhas' : 'Mostrar senhas'}
             </button>
 
+            {/* Cloudflare Turnstile Widget */}
+            <TurnstileWidget />
+
             <Button 
               type="submit" 
               className="w-full bg-white font-medium text-black hover:bg-zinc-200"
@@ -353,7 +341,7 @@ export function AuthModals({
               {isRegistering ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Criando...
+                  Criando conta...
                 </>
               ) : (
                 <>
