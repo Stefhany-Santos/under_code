@@ -37,9 +37,3 @@ O front-end da Under Code foi arquitetado com foco extremo em **UX/UI premium**,
 - **Estilização:** Tailwind CSS + shadcn/ui
 - **Ícones:** Lucide React
 - **Integração Back-end Prevista:** Nest.js + Supabase (PostgreSQL)
-
-## 📦 Como rodar o projeto localmente
-
-1. Clone o repositório:
-```bash
-git clone [https://github.com/seu-usuario/under-code-frontend.git](https://github.com/seu-usuario/under-code-frontend.git)
