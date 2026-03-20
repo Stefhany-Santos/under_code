@@ -6,11 +6,12 @@ import {
   Package, 
   ShoppingCart, 
   Users, 
-  Settings 
+  Settings,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type AdminView = 'dashboard' | 'categories' | 'products' | 'orders' | 'customers' | 'settings';
+export type AdminView = 'dashboard' | 'categories' | 'products' | 'orders' | 'customers' | 'activities' | 'settings';
 
 interface AdminSidebarProps {
   currentView: AdminView;
@@ -23,6 +24,7 @@ const menuItems: { id: AdminView; label: string; icon: React.ElementType }[] = [
   { id: 'products', label: 'Produtos', icon: Package },
   { id: 'orders', label: 'Pedidos', icon: ShoppingCart },
   { id: 'customers', label: 'Clientes', icon: Users },
+  { id: 'activities', label: 'Atividades', icon: Activity },
   { id: 'settings', label: 'Configuracoes', icon: Settings },
 ];
 

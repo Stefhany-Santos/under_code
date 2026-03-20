@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -33,8 +33,123 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { mockScripts, Script, formatPrice, formatDate } from '@/lib/mock-data';
-import { Plus, Pencil, Trash2, Download, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Search, UploadCloud, X, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
+
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: number;
+  version: string;
+  framework: 'QBox' | 'QBCore' | 'Standalone';
+  category: string;
+  imageUrl: string;
+}
+
+function ImageUploadArea({ 
+  imageUrl, 
+  onImageChange 
+}: { 
+  imageUrl: string; 
+  onImageChange: (url: string) => void;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      handleFile(files[0]);
+    }
+  }, []);
+
+  const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      handleFile(files[0]);
+    }
+  }, []);
+
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    onImageChange(url);
+  };
+
+  const handleRemoveImage = () => {
+    onImageChange('');
+  };
+
+  if (imageUrl && imageUrl !== '/placeholder.svg') {
+    return (
+      <div className="relative">
+        <div className="relative h-48 w-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
+          <Image
+            src={imageUrl}
+            alt="Preview"
+            fill
+            className="object-cover"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 h-8 w-8 bg-zinc-900/80 text-zinc-400 hover:bg-zinc-900 hover:text-white"
+            onClick={handleRemoveImage}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={() => inputRef.current?.click()}
+      className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-all ${
+        isDragging
+          ? 'border-emerald-500 bg-emerald-500/10'
+          : 'border-zinc-700 bg-zinc-900/30 hover:border-zinc-600 hover:bg-zinc-900/50'
+      }`}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/jpg"
+        onChange={handleFileInput}
+        className="hidden"
+      />
+      <UploadCloud className={`mx-auto h-10 w-10 ${isDragging ? 'text-emerald-400' : 'text-zinc-400'}`} />
+      <p className={`mt-3 text-sm font-medium ${isDragging ? 'text-emerald-400' : 'text-zinc-300'}`}>
+        Arraste a imagem do script ou clique para fazer upload
+      </p>
+      <p className="mt-1 text-xs text-zinc-500">PNG, JPG ate 5MB</p>
+    </div>
+  );
+}
 
 export function ProductsTable() {
   const [products, setProducts] = useState<Script[]>(mockScripts);
@@ -42,6 +157,15 @@ export function ProductsTable() {
   const [editingProduct, setEditingProduct] = useState<Script | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Script | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newProductData, setNewProductData] = useState<ProductFormData>({
+    name: '',
+    description: '',
+    price: 99.90,
+    version: '1.0.0',
+    framework: 'QBox',
+    category: '',
+    imageUrl: '',
+  });
   const { toast } = useToast();
 
   const filteredProducts = products.filter(p => 
@@ -69,21 +193,30 @@ export function ProductsTable() {
   };
 
   const handleAddNew = () => {
+    if (!newProductData.name.trim()) {
+      toast({
+        title: 'Erro',
+        description: 'O nome do produto e obrigatorio.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const newProduct: Script = {
       id: String(Date.now()),
-      name: 'Novo Produto',
-      slug: 'novo-produto',
-      description: 'Descricao do novo produto',
-      longDescription: 'Descricao completa do novo produto',
-      price: 99.90,
-      framework: 'QBox',
-      category: 'misc',
+      name: newProductData.name,
+      slug: newProductData.name.toLowerCase().replace(/\s+/g, '-'),
+      description: newProductData.description,
+      longDescription: newProductData.description,
+      price: newProductData.price,
+      framework: newProductData.framework,
+      category: newProductData.category || 'misc',
       status: 'draft',
-      imageUrl: '/placeholder.svg',
+      imageUrl: newProductData.imageUrl || '/placeholder.svg',
       galleryUrls: [],
-      features: ['Feature 1', 'Feature 2'],
+      features: [],
       requirements: [],
-      version: '1.0.0',
+      version: newProductData.version,
       changelog: [],
       rating: 0,
       reviewCount: 0,
@@ -97,10 +230,31 @@ export function ProductsTable() {
     };
     setProducts([...products, newProduct]);
     setIsAddModalOpen(false);
-    setEditingProduct(newProduct);
+    setNewProductData({
+      name: '',
+      description: '',
+      price: 99.90,
+      version: '1.0.0',
+      framework: 'QBox',
+      category: '',
+      imageUrl: '',
+    });
     toast({
       title: 'Produto criado',
-      description: 'Novo produto adicionado. Edite os detalhes.',
+      description: `"${newProduct.name}" foi adicionado com sucesso.`,
+    });
+  };
+
+  const resetAddModal = () => {
+    setIsAddModalOpen(false);
+    setNewProductData({
+      name: '',
+      description: '',
+      price: 99.90,
+      version: '1.0.0',
+      framework: 'QBox',
+      category: '',
+      imageUrl: '',
     });
   };
 
@@ -151,10 +305,19 @@ export function ProductsTable() {
               <TableRow key={product.id} className="border-zinc-800 hover:bg-zinc-800/30">
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <span className="text-lg font-bold text-emerald-400">
-                        {product.name.charAt(0)}
-                      </span>
+                    <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-emerald-500/10">
+                      {product.imageUrl && product.imageUrl !== '/placeholder.svg' ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg font-bold text-emerald-400">
+                          {product.name.charAt(0)}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-white">{product.name}</p>
@@ -216,13 +379,22 @@ export function ProductsTable() {
 
       {/* Edit Modal */}
       <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
-        <DialogContent className="max-w-lg border-zinc-800 bg-zinc-950">
+        <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto border-zinc-800 bg-zinc-950">
           <DialogHeader>
             <DialogTitle className="text-white">Editar Produto</DialogTitle>
             <DialogDescription className="text-zinc-400">Faca as alteracoes necessarias no produto.</DialogDescription>
           </DialogHeader>
           {editingProduct && (
             <div className="space-y-4">
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <Label className="text-zinc-300">Imagem do Produto</Label>
+                <ImageUploadArea 
+                  imageUrl={editingProduct.imageUrl} 
+                  onImageChange={(url) => setEditingProduct({ ...editingProduct, imageUrl: url || '/placeholder.svg' })}
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-zinc-300">Nome</Label>
                 <Input
@@ -322,22 +494,100 @@ export function ProductsTable() {
       </AlertDialog>
 
       {/* Add Modal */}
-      <AlertDialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <AlertDialogContent className="border-zinc-800 bg-zinc-950">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Adicionar Novo Produto</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-400">
-              Sera criado um novo produto com valores padrao. Voce podera editar os detalhes em seguida.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleAddNew} className="bg-emerald-600 hover:bg-emerald-700">
+      <Dialog open={isAddModalOpen} onOpenChange={resetAddModal}>
+        <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto border-zinc-800 bg-zinc-950">
+          <DialogHeader>
+            <DialogTitle className="text-white">Adicionar Novo Produto</DialogTitle>
+            <DialogDescription className="text-zinc-400">Preencha as informacoes do novo produto.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="text-zinc-300">Imagem do Produto</Label>
+              <ImageUploadArea 
+                imageUrl={newProductData.imageUrl} 
+                onImageChange={(url) => setNewProductData({ ...newProductData, imageUrl: url })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-name" className="text-zinc-300">Nome *</Label>
+              <Input
+                id="new-name"
+                value={newProductData.name}
+                onChange={(e) => setNewProductData({ ...newProductData, name: e.target.value })}
+                placeholder="Nome do produto"
+                className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-description" className="text-zinc-300">Descricao</Label>
+              <Textarea
+                id="new-description"
+                value={newProductData.description}
+                onChange={(e) => setNewProductData({ ...newProductData, description: e.target.value })}
+                placeholder="Descricao do produto"
+                className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-price" className="text-zinc-300">Preco (R$)</Label>
+                <Input
+                  id="new-price"
+                  type="number"
+                  step="0.01"
+                  value={newProductData.price}
+                  onChange={(e) => setNewProductData({ ...newProductData, price: parseFloat(e.target.value) || 0 })}
+                  className="border-zinc-800 bg-zinc-900 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-version" className="text-zinc-300">Versao</Label>
+                <Input
+                  id="new-version"
+                  value={newProductData.version}
+                  onChange={(e) => setNewProductData({ ...newProductData, version: e.target.value })}
+                  className="border-zinc-800 bg-zinc-900 text-white"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-framework" className="text-zinc-300">Framework</Label>
+                <select
+                  id="new-framework"
+                  className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-white"
+                  value={newProductData.framework}
+                  onChange={(e) => setNewProductData({ ...newProductData, framework: e.target.value as 'QBox' | 'QBCore' | 'Standalone' })}
+                >
+                  <option value="QBox">QBox</option>
+                  <option value="QBCore">QBCore</option>
+                  <option value="Standalone">Standalone</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-category" className="text-zinc-300">Categoria</Label>
+                <Input
+                  id="new-category"
+                  value={newProductData.category}
+                  onChange={(e) => setNewProductData({ ...newProductData, category: e.target.value })}
+                  placeholder="Ex: FiveM Scripts"
+                  className="border-zinc-800 bg-zinc-900 text-white placeholder:text-zinc-500"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={resetAddModal} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+              Cancelar
+            </Button>
+            <Button onClick={handleAddNew} className="bg-emerald-600 hover:bg-emerald-700">
               Criar Produto
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

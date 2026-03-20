@@ -8,6 +8,7 @@ import { AdminCategories } from './admin-categories';
 import { AdminProducts } from './admin-products';
 import { AdminOrders } from './admin-orders';
 import { AdminCustomers } from './admin-customers';
+import { AdminActivities } from './admin-activities';
 import { AdminSettings } from './admin-settings';
 
 export function AdminLayout() {
@@ -25,6 +26,8 @@ export function AdminLayout() {
         return <AdminOrders />;
       case 'customers':
         return <AdminCustomers />;
+      case 'activities':
+        return <AdminActivities />;
       case 'settings':
         return <AdminSettings />;
       default:
