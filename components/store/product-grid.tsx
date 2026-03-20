@@ -10,11 +10,12 @@ import { Search, ChevronDown } from 'lucide-react';
 interface ProductGridProps {
   onAddToCart: (script: Script) => void;
   onViewDetails: (script: Script) => void;
+  isLoggedIn?: boolean;
 }
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'newest';
 
-export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
+export function ProductGrid({ onAddToCart, onViewDetails, isLoggedIn = false }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('popular');
@@ -65,23 +66,25 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
   }, [selectedCategory, searchQuery, sortBy]);
 
   return (
-    <section id="store" className="bg-black py-24">
-      {/* Top border */}
-      <div className="mx-auto max-w-7xl border-t border-zinc-900" />
+    <section id="store" className={`bg-black ${isLoggedIn ? 'py-8' : 'py-24'}`}>
+      {/* Top border - only for guests */}
+      {!isLoggedIn && <div className="mx-auto max-w-7xl border-t border-zinc-900" />}
       
-      <div className="mx-auto max-w-7xl px-6 pt-24">
-        {/* Section Header */}
-        <div className="mb-8 text-center">
-          <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-emerald-500">
-            Catalogo
-          </span>
-          <h2 className="mb-4 text-3xl font-medium tracking-tight text-white text-balance">
-            Catalogo de Scripts
-          </h2>
-          <p className="mx-auto max-w-lg text-zinc-400">
-            {mockScripts.length} scripts disponiveis para transformar seu servidor.
-          </p>
-        </div>
+      <div className={`mx-auto max-w-7xl px-6 ${isLoggedIn ? '' : 'pt-24'}`}>
+        {/* Section Header - only for guests */}
+        {!isLoggedIn && (
+          <div className="mb-8 text-center">
+            <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-emerald-500">
+              Catalogo
+            </span>
+            <h2 className="mb-4 text-3xl font-medium tracking-tight text-white text-balance">
+              Catalogo de Scripts
+            </h2>
+            <p className="mx-auto max-w-lg text-zinc-400">
+              {mockScripts.length} scripts disponiveis para transformar seu servidor.
+            </p>
+          </div>
+        )}
 
         {/* Catalog Toolbar */}
         <div className="mt-8">

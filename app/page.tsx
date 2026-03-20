@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/footer';
 import { HeroSection } from '@/components/store/hero-section';
 import { FeaturesSection } from '@/components/store/features-section';
 import { ProductGrid } from '@/components/store/product-grid';
+import { WelcomeHeader } from '@/components/store/welcome-header';
 import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
@@ -26,7 +27,7 @@ export default function Home() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'store' | 'support' | 'dashboard'>('store');
   const { toast } = useToast();
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
 
   const handleAddToCart = (script: Script) => {
     if (cart.find(s => s.id === script.id)) {
@@ -76,6 +77,7 @@ export default function Home() {
     
     // Store view - different content based on login status
     const isGuest = userRole === 'guest';
+    const isLoggedIn = !isGuest;
     
     return (
       <>
@@ -87,13 +89,20 @@ export default function Home() {
           </>
         )}
         
-        {/* Product catalog - always shown, with extra padding for logged users */}
-        <div className={!isGuest ? 'pt-16' : ''}>
-          <ProductGrid
-            onAddToCart={handleAddToCart}
-            onViewDetails={handleViewDetails}
+        {/* Welcome Header - only for logged in users */}
+        {isLoggedIn && user && (
+          <WelcomeHeader
+            userName={user.name.split(' ')[0]}
+            onNavigateToDashboard={() => setCurrentView('dashboard')}
           />
-        </div>
+        )}
+        
+        {/* Product catalog - always shown */}
+        <ProductGrid
+          onAddToCart={handleAddToCart}
+          onViewDetails={handleViewDetails}
+          isLoggedIn={isLoggedIn}
+        />
       </>
     );
   };
