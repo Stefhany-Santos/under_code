@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { ShoppingCart, Menu, X, ChevronDown, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,17 +13,26 @@ interface NavbarProps {
   onCartClick: () => void;
   onSignInClick: () => void;
   onSignUpClick: () => void;
+  currentView: 'store' | 'support' | 'dashboard';
+  onViewChange: (view: 'store' | 'support' | 'dashboard') => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, currentView, onViewChange }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, userRole, logout } = useAuth();
 
-  const navLinks = [
-    { href: '#', label: 'Inicio' },
-    { href: '#store', label: 'Loja' },
-    { href: '#', label: 'Suporte' },
-  ];
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setAvatarDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-black/95 backdrop-blur-sm">
@@ -37,15 +46,29 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="text-sm text-zinc-400 transition-colors hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <button
+            onClick={() => onViewChange('store')}
+            className={`text-sm transition-colors ${
+              currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Inicio
+          </button>
+          <a
+            href="#store"
+            onClick={() => onViewChange('store')}
+            className="text-sm text-zinc-400 transition-colors hover:text-white"
+          >
+            Loja
+          </a>
+          <button
+            onClick={() => onViewChange('support')}
+            className={`text-sm transition-colors ${
+              currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Suporte
+          </button>
         </div>
 
         {/* Desktop Actions */}
@@ -82,23 +105,76 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
               </Button>
             </>
           ) : (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-zinc-400">
-                {user?.name}
-              </span>
-              {userRole === 'admin' && (
-                <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
-                  Admin
-                </Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="h-9 border border-zinc-800 bg-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setAvatarDropdownOpen(!avatarDropdownOpen)}
+                className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
               >
-                Sair
-              </Button>
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                  <User className="h-4 w-4" />
+                </div>
+                <span className="text-sm text-zinc-300">{user?.name}</span>
+                {userRole === 'admin' && (
+                  <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-400">
+                    Admin
+                  </Badge>
+                )}
+                <ChevronDown className={`h-4 w-4 text-zinc-500 transition-transform ${avatarDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {avatarDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl"
+                  >
+                    <div className="border-b border-zinc-800 px-4 py-3">
+                      <p className="text-sm font-medium text-white">{user?.name}</p>
+                      <p className="text-xs text-zinc-500">{user?.email}</p>
+                    </div>
+                    <div className="p-1">
+                      {userRole === 'customer' && (
+                        <button
+                          onClick={() => {
+                            onViewChange('dashboard');
+                            setAvatarDropdownOpen(false);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Meu Painel
+                        </button>
+                      )}
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => {
+                            onViewChange('dashboard');
+                            setAvatarDropdownOpen(false);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Dashboard Admin
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          logout();
+                          setAvatarDropdownOpen(false);
+                          onViewChange('store');
+                        }}
+                        className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sair
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -122,19 +198,32 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
             className="border-b border-zinc-800 bg-black md:hidden"
           >
             <div className="flex flex-col gap-4 px-6 py-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm text-zinc-400 transition-colors hover:text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="flex gap-2 pt-2">
+              <button
+                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+                className={`text-left text-sm transition-colors ${
+                  currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Inicio
+              </button>
+              <a
+                href="#store"
+                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                Loja
+              </a>
+              <button
+                onClick={() => { onViewChange('support'); setMobileMenuOpen(false); }}
+                className={`text-left text-sm transition-colors ${
+                  currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Suporte
+              </button>
+              <div className="flex flex-col gap-2 pt-2">
                 {userRole === 'guest' ? (
-                  <>
+                  <div className="flex gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -150,16 +239,39 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
                     >
                       Get Started
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { logout(); setMobileMenuOpen(false); }}
-                    className="flex-1 border border-zinc-800 bg-transparent text-zinc-400"
-                  >
-                    Sair
-                  </Button>
+                  <div className="flex flex-col gap-2 border-t border-zinc-800 pt-4">
+                    <div className="flex items-center gap-3 pb-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">{user?.name}</p>
+                        <p className="text-xs text-zinc-500">{user?.email}</p>
+                      </div>
+                    </div>
+                    {(userRole === 'customer' || userRole === 'admin') && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }}
+                        className="justify-start border border-zinc-800 bg-transparent text-zinc-300"
+                      >
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        {userRole === 'admin' ? 'Dashboard Admin' : 'Meu Painel'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { logout(); setMobileMenuOpen(false); onViewChange('store'); }}
+                      className="justify-start border border-zinc-800 bg-transparent text-zinc-400"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sair
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

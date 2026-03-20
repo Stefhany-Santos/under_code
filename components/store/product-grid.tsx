@@ -5,14 +5,19 @@ import { ProductCard } from './product-card';
 import { CategoryPills } from './category-pills';
 import { mockScripts, Script, scriptCategories } from '@/lib/mock-data';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronDown } from 'lucide-react';
 
 interface ProductGridProps {
   onAddToCart: (script: Script) => void;
   onViewDetails: (script: Script) => void;
 }
 
+type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'newest';
+
 export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
 
   const categories = useMemo(() => {
     const cats = scriptCategories.map(c => c.label);
@@ -20,24 +25,92 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
   }, []);
 
   const filteredScripts = useMemo(() => {
-    if (selectedCategory === 'Todos') {
-      return mockScripts;
+    let scripts = mockScripts;
+    
+    // Filter by category
+    if (selectedCategory !== 'Todos') {
+      const categoryValue = scriptCategories.find(c => c.label === selectedCategory)?.value;
+      scripts = scripts.filter(script => script.category === categoryValue);
     }
-    const categoryValue = scriptCategories.find(c => c.label === selectedCategory)?.value;
-    return mockScripts.filter(script => script.category === categoryValue);
-  }, [selectedCategory]);
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      scripts = scripts.filter(script => 
+        script.name.toLowerCase().includes(query) ||
+        script.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // Sort
+    switch (sortBy) {
+      case 'price-asc':
+        scripts = [...scripts].sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        scripts = [...scripts].sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        scripts = [...scripts].sort((a, b) => 
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+        break;
+      case 'popular':
+      default:
+        scripts = [...scripts].sort((a, b) => b.downloads - a.downloads);
+        break;
+    }
+    
+    return scripts;
+  }, [selectedCategory, searchQuery, sortBy]);
 
   return (
-    <section id="store" className="bg-black py-16">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="store" className="bg-black py-24">
+      {/* Top border */}
+      <div className="mx-auto max-w-7xl border-t border-zinc-900" />
+      
+      <div className="mx-auto max-w-7xl px-6 pt-24">
         {/* Section Header */}
-        <div className="mb-10 text-center">
-          <h2 className="mb-3 text-2xl font-semibold tracking-tight text-zinc-50 sm:text-3xl">
-            Nossa Loja
+        <div className="mb-12 text-center">
+          <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-emerald-500">
+            Catalogo
+          </span>
+          <h2 className="mb-4 text-3xl font-medium tracking-tight text-white text-balance">
+            Catalogo de Scripts
           </h2>
-          <p className="text-zinc-500">
-            {mockScripts.length} scripts disponiveis
+          <p className="mx-auto max-w-lg text-zinc-400">
+            {mockScripts.length} scripts disponiveis para transformar seu servidor.
           </p>
+        </div>
+
+        {/* Toolbar */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Search Input */}
+          <div className="relative flex-1 sm:max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Buscar scripts por nome..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-zinc-700 focus:bg-zinc-900"
+            />
+          </div>
+          
+          {/* Sort Dropdown */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="w-full appearance-none rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-4 pr-10 text-sm text-white outline-none transition-colors focus:border-zinc-700 focus:bg-zinc-900 sm:w-auto"
+            >
+              <option value="popular">Mais Populares</option>
+              <option value="price-asc">Menor Preco</option>
+              <option value="price-desc">Maior Preco</option>
+              <option value="newest">Mais Recentes</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          </div>
         </div>
 
         {/* Category Pills */}
@@ -50,9 +123,10 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
         </div>
 
         {/* Results info */}
-        <div className="mb-6">
+        <div className="mb-8 flex items-center justify-between">
           <p className="text-sm text-zinc-500">
             Mostrando {filteredScripts.length} {filteredScripts.length === 1 ? 'script' : 'scripts'}
+            {searchQuery && ` para "${searchQuery}"`}
           </p>
         </div>
 

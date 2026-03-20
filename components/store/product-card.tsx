@@ -22,14 +22,14 @@ export function ProductCard({ product, onAddToCart, onViewDetails, index = 0 }: 
       className="group"
     >
       <div 
-        className="cursor-pointer overflow-hidden rounded-lg border border-zinc-800/80 bg-[#0A0A0A] transition-colors hover:border-zinc-700"
+        className="cursor-pointer overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:shadow-[0_8px_30px_rgb(16,185,129,0.1)]"
         onClick={() => onViewDetails(product)}
       >
         {/* Image placeholder */}
-        <div className="relative aspect-video bg-zinc-800/50">
+        <div className="relative aspect-video bg-zinc-900/50">
           {/* Placeholder content */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl font-bold text-zinc-700">{product.name.charAt(0)}</span>
+            <span className="text-4xl font-bold text-zinc-800">{product.name.charAt(0)}</span>
           </div>
           
           {/* Framework badge */}
