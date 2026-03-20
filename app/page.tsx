@@ -9,7 +9,7 @@ import { ProductGrid } from '@/components/store/product-grid';
 import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
-import { MyScripts } from '@/components/client/my-scripts';
+import { ClientDashboard } from '@/components/client/client-dashboard';
 import { AdminDashboard } from '@/components/admin/admin-dashboard';
 import { SupportView } from '@/components/support/support-view';
 import { Script } from '@/lib/mock-data';
@@ -24,7 +24,7 @@ export default function Home() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'store' | 'support'>('store');
+  const [currentView, setCurrentView] = useState<'store' | 'support' | 'dashboard'>('store');
   const { toast } = useToast();
   const { userRole } = useAuth();
 
@@ -64,13 +64,17 @@ export default function Home() {
       return <SupportView />;
     }
     
-    if (userRole === 'admin') {
-      return <AdminDashboard />;
+    // Dashboard view - for logged in users
+    if (currentView === 'dashboard') {
+      if (userRole === 'admin') {
+        return <AdminDashboard />;
+      }
+      if (userRole === 'customer') {
+        return <ClientDashboard />;
+      }
     }
-    if (userRole === 'customer') {
-      return <MyScripts />;
-    }
-    // Guest view - show store
+    
+    // Store view - show store for everyone (including logged in users)
     return (
       <>
         <HeroSection />
