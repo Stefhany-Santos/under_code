@@ -149,3 +149,57 @@
   background: rgba(16, 185, 129, 0.2);
   color: #fff;
 }
+
+/* Typography plugin styles for prose */
+.prose {
+  color: #a1a1aa;
+  max-width: 65ch;
+}
+
+.prose h1 {
+  color: #fafafa;
+  font-weight: 500;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.prose h2 {
+  color: #fafafa;
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #27272a;
+}
+
+.prose p {
+  margin-bottom: 1.25rem;
+  line-height: 1.75;
+}
+
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose strong {
+  color: #fafafa;
+  font-weight: 600;
+}
+
+.prose a {
+  color: #34d399;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}

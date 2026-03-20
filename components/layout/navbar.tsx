@@ -13,17 +13,13 @@ interface NavbarProps {
   onCartClick: () => void;
   onSignInClick: () => void;
   onSignUpClick: () => void;
+  currentView: 'store' | 'support';
+  onViewChange: (view: 'store' | 'support') => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, currentView, onViewChange }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, userRole, logout } = useAuth();
-
-  const navLinks = [
-    { href: '#', label: 'Inicio' },
-    { href: '#store', label: 'Loja' },
-    { href: '#', label: 'Suporte' },
-  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-black/95 backdrop-blur-sm">
@@ -37,15 +33,29 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="text-sm text-zinc-400 transition-colors hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <button
+            onClick={() => onViewChange('store')}
+            className={`text-sm transition-colors ${
+              currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Inicio
+          </button>
+          <a
+            href="#store"
+            onClick={() => onViewChange('store')}
+            className="text-sm text-zinc-400 transition-colors hover:text-white"
+          >
+            Loja
+          </a>
+          <button
+            onClick={() => onViewChange('support')}
+            className={`text-sm transition-colors ${
+              currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            Suporte
+          </button>
         </div>
 
         {/* Desktop Actions */}
@@ -122,16 +132,29 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick }:
             className="border-b border-zinc-800 bg-black md:hidden"
           >
             <div className="flex flex-col gap-4 px-6 py-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm text-zinc-400 transition-colors hover:text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <button
+                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+                className={`text-left text-sm transition-colors ${
+                  currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Inicio
+              </button>
+              <a
+                href="#store"
+                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+                className="text-sm text-zinc-400 transition-colors hover:text-white"
+              >
+                Loja
+              </a>
+              <button
+                onClick={() => { onViewChange('support'); setMobileMenuOpen(false); }}
+                className={`text-left text-sm transition-colors ${
+                  currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                Suporte
+              </button>
               <div className="flex gap-2 pt-2">
                 {userRole === 'guest' ? (
                   <>

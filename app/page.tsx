@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { HeroSection } from '@/components/store/hero-section';
+import { FeaturesSection } from '@/components/store/features-section';
 import { ProductGrid } from '@/components/store/product-grid';
 import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
 import { MyScripts } from '@/components/client/my-scripts';
 import { AdminDashboard } from '@/components/admin/admin-dashboard';
+import { SupportView } from '@/components/support/support-view';
 import { Script } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -22,6 +24,7 @@ export default function Home() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<'store' | 'support'>('store');
   const { toast } = useToast();
   const { userRole } = useAuth();
 
@@ -54,8 +57,13 @@ export default function Home() {
     setIsProductDetailOpen(true);
   };
 
-  // Show different content based on userRole
+  // Show different content based on userRole and currentView
   const renderContent = () => {
+    // Support view - accessible from any role
+    if (currentView === 'support') {
+      return <SupportView />;
+    }
+    
     if (userRole === 'admin') {
       return <AdminDashboard />;
     }
@@ -66,6 +74,7 @@ export default function Home() {
     return (
       <>
         <HeroSection />
+        <FeaturesSection />
         <ProductGrid
           onAddToCart={handleAddToCart}
           onViewDetails={handleViewDetails}
@@ -81,6 +90,8 @@ export default function Home() {
         onCartClick={() => setIsCheckoutOpen(true)}
         onSignInClick={() => setIsLoginOpen(true)}
         onSignUpClick={() => setIsRegisterOpen(true)}
+        currentView={currentView}
+        onViewChange={setCurrentView}
       />
 
       <main className="pt-16">

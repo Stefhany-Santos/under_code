@@ -28,20 +28,26 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
   }, [selectedCategory]);
 
   return (
-    <section id="store" className="bg-black py-16">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="store" className="bg-black py-24">
+      {/* Top border */}
+      <div className="mx-auto max-w-7xl border-t border-zinc-900" />
+      
+      <div className="mx-auto max-w-7xl px-6 pt-24">
         {/* Section Header */}
-        <div className="mb-10 text-center">
-          <h2 className="mb-3 text-2xl font-semibold tracking-tight text-zinc-50 sm:text-3xl">
+        <div className="mb-12 text-center">
+          <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-emerald-500">
+            Catalogo
+          </span>
+          <h2 className="mb-4 text-3xl font-medium tracking-tight text-white text-balance">
             Nossa Loja
           </h2>
-          <p className="text-zinc-500">
-            {mockScripts.length} scripts disponiveis
+          <p className="mx-auto max-w-lg text-zinc-400">
+            {mockScripts.length} scripts disponiveis para transformar seu servidor.
           </p>
         </div>
 
         {/* Category Pills */}
-        <div className="mb-10">
+        <div className="mb-12">
           <CategoryPills
             categories={categories}
             selected={selectedCategory}
@@ -50,7 +56,7 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
         </div>
 
         {/* Results info */}
-        <div className="mb-6">
+        <div className="mb-8 flex items-center justify-between">
           <p className="text-sm text-zinc-500">
             Mostrando {filteredScripts.length} {filteredScripts.length === 1 ? 'script' : 'scripts'}
           </p>
