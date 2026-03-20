@@ -84,27 +84,27 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
         </div>
 
         {/* Catalog Toolbar */}
-        <div className="mt-8 space-y-6">
-          {/* Search & Sort Bar */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="mt-8">
+          {/* Row 1: Search & Sort - Aligned Right */}
+          <div className="mb-6 flex w-full flex-col items-center justify-end gap-4 sm:flex-row">
             {/* Search Input */}
-            <div className="group relative flex-1 sm:max-w-2xl">
+            <div className="group relative w-full sm:w-64">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-400" />
               <input
                 type="text"
-                placeholder="Buscar scripts por nome ou descricao..."
+                placeholder="Buscar scripts..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 pl-11 pr-4 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
+                className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
               />
             </div>
             
             {/* Sort Dropdown */}
-            <div className="relative shrink-0">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/40 pl-4 pr-10 text-sm text-zinc-300 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60 sm:w-auto sm:min-w-[180px]"
+                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/40 pl-4 pr-10 text-sm text-zinc-300 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60 sm:w-auto sm:min-w-[160px]"
               >
                 <option value="popular">Mais Populares</option>
                 <option value="price-asc">Menor Preco</option>
@@ -115,20 +115,14 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
             </div>
           </div>
 
-          {/* Category Pills */}
-          <CategoryPills
-            categories={categories}
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
-        </div>
-
-        {/* Results info */}
-        <div className="mb-10 mt-6 flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
-            Mostrando {filteredScripts.length} {filteredScripts.length === 1 ? 'script' : 'scripts'}
-            {searchQuery && ` para "${searchQuery}"`}
-          </p>
+          {/* Row 2: Categories - Centered */}
+          <div className="mb-10 flex w-full justify-center">
+            <CategoryPills
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+          </div>
         </div>
 
         {/* Grid */}

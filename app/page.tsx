@@ -74,15 +74,26 @@ export default function Home() {
       }
     }
     
-    // Store view - show store for everyone (including logged in users)
+    // Store view - different content based on login status
+    const isGuest = userRole === 'guest';
+    
     return (
       <>
-        <HeroSection />
-        <FeaturesSection />
-        <ProductGrid
-          onAddToCart={handleAddToCart}
-          onViewDetails={handleViewDetails}
-        />
+        {/* Marketing sections - only for guests */}
+        {isGuest && (
+          <>
+            <HeroSection />
+            <FeaturesSection />
+          </>
+        )}
+        
+        {/* Product catalog - always shown, with extra padding for logged users */}
+        <div className={!isGuest ? 'pt-16' : ''}>
+          <ProductGrid
+            onAddToCart={handleAddToCart}
+            onViewDetails={handleViewDetails}
+          />
+        </div>
       </>
     );
   };
