@@ -58,18 +58,23 @@ export default function Home() {
     setIsProductDetailOpen(true);
   };
 
+  // Check if admin - renders isolated admin center
+  const isAdmin = userRole === 'admin';
+
   // Show different content based on userRole and currentView
   const renderContent = () => {
-    // Support view - accessible from any role
+    // Admin Center - completely isolated from storefront
+    if (isAdmin) {
+      return <AdminDashboard />;
+    }
+    
+    // Support view - accessible from any role (except admin)
     if (currentView === 'support') {
       return <SupportView />;
     }
     
-    // Dashboard view - for logged in users
+    // Dashboard view - for logged in customers
     if (currentView === 'dashboard') {
-      if (userRole === 'admin') {
-        return <AdminDashboard />;
-      }
       if (userRole === 'customer') {
         return <ClientDashboard />;
       }
@@ -116,13 +121,14 @@ export default function Home() {
         onSignUpClick={() => setIsRegisterOpen(true)}
         currentView={currentView}
         onViewChange={setCurrentView}
+        isAdmin={isAdmin}
       />
 
       <main className="pt-16">
         {renderContent()}
       </main>
 
-      <Footer />
+      {!isAdmin && <Footer />}
 
       {/* Auth Modals */}
       <AuthModals
