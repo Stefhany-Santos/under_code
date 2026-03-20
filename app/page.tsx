@@ -10,7 +10,7 @@ import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
 import { ClientDashboard } from '@/components/client/client-dashboard';
-import { AdminDashboard } from '@/components/admin/admin-dashboard';
+import { AdminLayout } from '@/components/admin/admin-layout';
 import { SupportView } from '@/components/support/support-view';
 import { Script } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +26,7 @@ export default function Home() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'store' | 'support' | 'dashboard'>('store');
   const { toast } = useToast();
-  const { userRole } = useAuth();
+  const { userRole, setUserRole } = useAuth();
 
   const handleAddToCart = (script: Script) => {
     if (cart.find(s => s.id === script.id)) {
@@ -57,6 +57,12 @@ export default function Home() {
     setIsProductDetailOpen(true);
   };
 
+  // Handler for admin to exit and view store as guest
+  const handleExitAdmin = () => {
+    setUserRole('guest');
+    setCurrentView('store');
+  };
+
   // Show different content based on userRole and currentView
   const renderContent = () => {
     // Support view - accessible from any role
@@ -66,9 +72,6 @@ export default function Home() {
     
     // Dashboard view - for logged in users
     if (currentView === 'dashboard') {
-      if (userRole === 'admin') {
-        return <AdminDashboard />;
-      }
       if (userRole === 'customer') {
         return <ClientDashboard />;
       }
@@ -97,6 +100,16 @@ export default function Home() {
       </>
     );
   };
+
+  // Render isolated Admin Layout when admin is in dashboard view
+  if (userRole === 'admin' && currentView === 'dashboard') {
+    return (
+      <>
+        <AdminLayout onExitAdmin={handleExitAdmin} />
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
