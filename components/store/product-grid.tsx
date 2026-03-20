@@ -84,53 +84,45 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
         </div>
 
         {/* Catalog Toolbar */}
-        <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center">
-          {/* Search Input - Fixed width on desktop */}
-          <div className="group relative w-full shrink-0 lg:w-64 lg:min-w-[250px]">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Buscar scripts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
-            />
-          </div>
-
-          {/* Categories & Sort Row on Mobile, inline on Desktop */}
-          <div className="flex flex-1 items-center gap-3 overflow-hidden">
-            {/* Category Pills - Takes remaining space */}
-            <div className="min-w-0 flex-1">
-              <CategoryPills
-                categories={categories}
-                selected={selectedCategory}
-                onSelect={setSelectedCategory}
+        <div className="mt-8">
+          {/* Row 1: Search & Sort - Aligned Right */}
+          <div className="mb-6 flex w-full flex-col items-center justify-end gap-4 sm:flex-row">
+            {/* Search Input */}
+            <div className="group relative w-full sm:w-64">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Buscar scripts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 pl-10 pr-4 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
               />
             </div>
             
-            {/* Sort Dropdown - Fixed to the right */}
-            <div className="relative shrink-0">
+            {/* Sort Dropdown */}
+            <div className="relative w-full sm:w-auto">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-10 cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/40 pl-3 pr-8 text-sm text-zinc-300 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
+                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/40 pl-4 pr-10 text-sm text-zinc-300 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60 sm:w-auto sm:min-w-[160px]"
               >
-                <option value="popular">Populares</option>
+                <option value="popular">Mais Populares</option>
                 <option value="price-asc">Menor Preco</option>
                 <option value="price-desc">Maior Preco</option>
-                <option value="newest">Recentes</option>
+                <option value="newest">Mais Recentes</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
             </div>
           </div>
-        </div>
 
-        {/* Results info */}
-        <div className="mb-10 mt-6 flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
-            Mostrando {filteredScripts.length} {filteredScripts.length === 1 ? 'script' : 'scripts'}
-            {searchQuery && ` para "${searchQuery}"`}
-          </p>
+          {/* Row 2: Categories - Centered */}
+          <div className="mb-10 flex w-full justify-center">
+            <CategoryPills
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+          </div>
         </div>
 
         {/* Grid */}
