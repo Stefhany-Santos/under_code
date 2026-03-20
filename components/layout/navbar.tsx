@@ -17,12 +17,26 @@ interface NavbarProps {
 }
 
 export function Navbar({ cartCount = 0, onCartClick, onSignInClick, onSignUpClick }: NavbarProps) {
+  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { user, userRole, logout } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Handle navigation after mount
+  useEffect(() => {
+    if (mounted && pendingRoute) {
+      router.push(pendingRoute);
+      setPendingRoute(null);
+    }
+  }, [mounted, pendingRoute, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,15 +52,15 @@ export function Navbar({ cartCount = 0, onCartClick, onSignInClick, onSignUpClic
   const handleLogout = () => {
     logout();
     setAvatarDropdownOpen(false);
-    router.push('/');
+    setPendingRoute('/');
   };
 
   const handleDashboardClick = () => {
     setAvatarDropdownOpen(false);
     if (userRole === 'admin') {
-      router.push('/admin');
+      setPendingRoute('/admin');
     } else if (userRole === 'customer') {
-      router.push('/dashboard');
+      setPendingRoute('/dashboard');
     }
   };
 

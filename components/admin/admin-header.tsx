@@ -16,10 +16,23 @@ import { useAuth } from '@/contexts/auth-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function AdminHeader() {
+  const [mounted, setMounted] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && pendingRoute) {
+      router.push(pendingRoute);
+      setPendingRoute(null);
+    }
+  }, [mounted, pendingRoute, router]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -34,7 +47,7 @@ export function AdminHeader() {
   const handleLogout = () => {
     logout();
     setAvatarDropdownOpen(false);
-    router.push('/');
+    setPendingRoute('/');
   };
 
   return (
