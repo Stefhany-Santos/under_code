@@ -9,9 +9,6 @@ import { ProductGrid } from '@/components/store/product-grid';
 import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
-import { ClientDashboard } from '@/components/client/client-dashboard';
-import { AdminDashboard } from '@/components/admin/admin-dashboard';
-import { SupportView } from '@/components/support/support-view';
 import { Script } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
@@ -24,7 +21,6 @@ export default function Home() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'store' | 'support' | 'dashboard'>('store');
   const { toast } = useToast();
   const { userRole } = useAuth();
 
@@ -57,28 +53,18 @@ export default function Home() {
     setIsProductDetailOpen(true);
   };
 
-  // Show different content based on userRole and currentView
-  const renderContent = () => {
-    // Support view - accessible from any role
-    if (currentView === 'support') {
-      return <SupportView />;
-    }
-    
-    // Dashboard view - for logged in users
-    if (currentView === 'dashboard') {
-      if (userRole === 'admin') {
-        return <AdminDashboard />;
-      }
-      if (userRole === 'customer') {
-        return <ClientDashboard />;
-      }
-    }
-    
-    // Store view - different content based on login status
-    const isGuest = userRole === 'guest';
-    
-    return (
-      <>
+  const isGuest = userRole === 'guest';
+
+  return (
+    <div className="min-h-screen bg-black">
+      <Navbar
+        cartCount={cart.length}
+        onCartClick={() => setIsCheckoutOpen(true)}
+        onSignInClick={() => setIsLoginOpen(true)}
+        onSignUpClick={() => setIsRegisterOpen(true)}
+      />
+
+      <main className="pt-16">
         {/* Marketing sections - only for guests */}
         {isGuest && (
           <>
@@ -88,29 +74,12 @@ export default function Home() {
         )}
         
         {/* Product catalog - always shown, with extra padding for logged users */}
-        <div className={!isGuest ? 'pt-16' : ''}>
+        <div id="store" className={!isGuest ? 'pt-16' : ''}>
           <ProductGrid
             onAddToCart={handleAddToCart}
             onViewDetails={handleViewDetails}
           />
         </div>
-      </>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-black">
-      <Navbar
-        cartCount={cart.length}
-        onCartClick={() => setIsCheckoutOpen(true)}
-        onSignInClick={() => setIsLoginOpen(true)}
-        onSignUpClick={() => setIsRegisterOpen(true)}
-        currentView={currentView}
-        onViewChange={setCurrentView}
-      />
-
-      <main className="pt-16">
-        {renderContent()}
       </main>
 
       <Footer />

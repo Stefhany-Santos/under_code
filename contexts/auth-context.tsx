@@ -18,6 +18,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (role: UserRole) => void;
   logout: () => void;
+  setUserRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: userRole !== 'guest',
         login,
         logout,
+        setUserRole,
       }}
     >
       {children}

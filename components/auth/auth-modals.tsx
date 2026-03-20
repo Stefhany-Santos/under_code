@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export function AuthModals({
   onLoginOpenChange, 
   onRegisterOpenChange 
 }: AuthModalsProps) {
+  const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
   
@@ -47,21 +49,40 @@ export function AuthModals({
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSimulateLogin = (role: UserRole) => {
+  // Redirect state
+  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
+
+  // Handle redirect after state update
+  useEffect(() => {
+    if (pendingRedirect) {
+      router.push(pendingRedirect);
+      setPendingRedirect(null);
+    }
+  }, [pendingRedirect, router]);
+
+  const handleSimulateLogin = useCallback((role: UserRole) => {
     setIsLoggingIn(true);
     setTimeout(() => {
       login(role);
       setIsLoggingIn(false);
       onLoginOpenChange(false);
-      resetLoginForm();
+      setLoginEmail('');
+      setLoginPassword('');
+      setShowLoginPassword(false);
       toast({
         title: 'Login realizado com sucesso!',
         description: role === 'admin' 
           ? 'Bem-vindo ao painel administrativo.' 
           : 'Bem-vindo de volta!',
       });
+      // Set pending redirect instead of calling router directly
+      if (role === 'admin') {
+        setPendingRedirect('/admin');
+      } else if (role === 'customer') {
+        setPendingRedirect('/dashboard');
+      }
     }, 800);
-  };
+  }, [login, onLoginOpenChange, toast]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,26 +121,17 @@ export function AuthModals({
       login('customer');
       setIsRegistering(false);
       onRegisterOpenChange(false);
-      resetRegisterForm();
+      setRegisterName('');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setRegisterConfirmPassword('');
+      setShowRegisterPassword(false);
       toast({
         title: 'Conta criada com sucesso!',
         description: 'Bem-vindo a Under Code!',
       });
+      setPendingRedirect('/dashboard');
     }, 1000);
-  };
-
-  const resetLoginForm = () => {
-    setLoginEmail('');
-    setLoginPassword('');
-    setShowLoginPassword(false);
-  };
-
-  const resetRegisterForm = () => {
-    setRegisterName('');
-    setRegisterEmail('');
-    setRegisterPassword('');
-    setRegisterConfirmPassword('');
-    setShowRegisterPassword(false);
   };
 
   const switchToRegister = () => {
