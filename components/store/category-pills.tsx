@@ -49,20 +49,20 @@ export function CategoryPills({ categories, selected, onSelect }: CategoryPillsP
       {/* Scrollable container */}
       <div 
         ref={scrollRef}
-        className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-1"
+        className="scrollbar-hide flex items-center gap-2 overflow-x-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => onSelect(category)}
-            className={`shrink-0 rounded-lg border px-4 py-1.5 text-sm font-medium transition-all ${
+            className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition-all ${
               selected === category
-                ? 'border-zinc-700 bg-zinc-800 text-zinc-50'
-                : 'border-zinc-800/50 bg-transparent text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                ? 'border-zinc-700 bg-zinc-900 text-zinc-50'
+                : 'border-zinc-800 bg-transparent text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200'
             }`}
           >
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5">
               {selected === category && (
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               )}
