@@ -15,9 +15,10 @@ interface NavbarProps {
   onSignUpClick: () => void;
   currentView: 'store' | 'support' | 'dashboard';
   onViewChange: (view: 'store' | 'support' | 'dashboard') => void;
+  isAdmin?: boolean;
 }
 
-export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, currentView, onViewChange }: NavbarProps) {
+export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, currentView, onViewChange, isAdmin = false }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,47 +45,51 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden items-center gap-8 md:flex">
-          <button
-            onClick={() => onViewChange('store')}
-            className={`text-sm transition-colors ${
-              currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Inicio
-          </button>
-          <a
-            href="#store"
-            onClick={() => onViewChange('store')}
-            className="text-sm text-zinc-400 transition-colors hover:text-white"
-          >
-            Loja
-          </a>
-          <button
-            onClick={() => onViewChange('support')}
-            className={`text-sm transition-colors ${
-              currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Suporte
-          </button>
-        </div>
+        {/* Desktop Navigation - Hidden for Admin */}
+        {!isAdmin && (
+          <div className="hidden items-center gap-8 md:flex">
+            <button
+              onClick={() => onViewChange('store')}
+              className={`text-sm transition-colors ${
+                currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Inicio
+            </button>
+            <a
+              href="#store"
+              onClick={() => onViewChange('store')}
+              className="text-sm text-zinc-400 transition-colors hover:text-white"
+            >
+              Loja
+            </a>
+            <button
+              onClick={() => onViewChange('support')}
+              className={`text-sm transition-colors ${
+                currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Suporte
+            </button>
+          </div>
+        )}
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-3 md:flex">
-          {/* Cart */}
-          <button
-            onClick={onCartClick}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-medium text-white">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          {/* Cart - Hidden for Admin */}
+          {!isAdmin && (
+            <button
+              onClick={onCartClick}
+              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-white"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-medium text-white">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {userRole === 'guest' ? (
             <>
@@ -148,18 +153,6 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
                           Meu Painel
                         </button>
                       )}
-                      {userRole === 'admin' && (
-                        <button
-                          onClick={() => {
-                            onViewChange('dashboard');
-                            setAvatarDropdownOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Dashboard Admin
-                        </button>
-                      )}
                       <button
                         onClick={() => {
                           logout();
@@ -179,18 +172,20 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 md:hidden"
-        >
-          {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </button>
+        {/* Mobile Menu Button - Hidden for Admin */}
+        {!isAdmin && (
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 md:hidden"
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        )}
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Hidden for Admin */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {!isAdmin && mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}

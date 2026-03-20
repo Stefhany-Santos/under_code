@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/footer';
 import { HeroSection } from '@/components/store/hero-section';
 import { FeaturesSection } from '@/components/store/features-section';
 import { ProductGrid } from '@/components/store/product-grid';
+import { WelcomeHeader } from '@/components/store/welcome-header';
 import { ProductDetailModal } from '@/components/store/product-detail-modal';
 import { CheckoutModal } from '@/components/store/checkout-modal';
 import { AuthModals } from '@/components/auth/auth-modals';
@@ -26,7 +27,7 @@ export default function Home() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'store' | 'support' | 'dashboard'>('store');
   const { toast } = useToast();
-  const { userRole } = useAuth();
+  const { userRole, user } = useAuth();
 
   const handleAddToCart = (script: Script) => {
     if (cart.find(s => s.id === script.id)) {
@@ -57,18 +58,23 @@ export default function Home() {
     setIsProductDetailOpen(true);
   };
 
+  // Check if admin - renders isolated admin center
+  const isAdmin = userRole === 'admin';
+
   // Show different content based on userRole and currentView
   const renderContent = () => {
-    // Support view - accessible from any role
+    // Admin Center - completely isolated from storefront
+    if (isAdmin) {
+      return <AdminDashboard />;
+    }
+    
+    // Support view - accessible from any role (except admin)
     if (currentView === 'support') {
       return <SupportView />;
     }
     
-    // Dashboard view - for logged in users
+    // Dashboard view - for logged in customers
     if (currentView === 'dashboard') {
-      if (userRole === 'admin') {
-        return <AdminDashboard />;
-      }
       if (userRole === 'customer') {
         return <ClientDashboard />;
       }
@@ -76,6 +82,7 @@ export default function Home() {
     
     // Store view - different content based on login status
     const isGuest = userRole === 'guest';
+    const isLoggedIn = !isGuest;
     
     return (
       <>
@@ -87,13 +94,20 @@ export default function Home() {
           </>
         )}
         
-        {/* Product catalog - always shown, with extra padding for logged users */}
-        <div className={!isGuest ? 'pt-16' : ''}>
-          <ProductGrid
-            onAddToCart={handleAddToCart}
-            onViewDetails={handleViewDetails}
+        {/* Welcome Header - only for logged in users */}
+        {isLoggedIn && user && (
+          <WelcomeHeader
+            userName={user.name.split(' ')[0]}
+            onNavigateToDashboard={() => setCurrentView('dashboard')}
           />
-        </div>
+        )}
+        
+        {/* Product catalog - always shown */}
+        <ProductGrid
+          onAddToCart={handleAddToCart}
+          onViewDetails={handleViewDetails}
+          isLoggedIn={isLoggedIn}
+        />
       </>
     );
   };
@@ -107,13 +121,14 @@ export default function Home() {
         onSignUpClick={() => setIsRegisterOpen(true)}
         currentView={currentView}
         onViewChange={setCurrentView}
+        isAdmin={isAdmin}
       />
 
       <main className="pt-16">
         {renderContent()}
       </main>
 
-      <Footer />
+      {!isAdmin && <Footer />}
 
       {/* Auth Modals */}
       <AuthModals

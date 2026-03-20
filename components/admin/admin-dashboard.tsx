@@ -1,79 +1,161 @@
 'use client';
 
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BarChart3, Package, CreditCard, User, ChevronRight, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { KPICards } from './kpi-cards';
 import { SalesChart } from './sales-chart';
 import { ScriptsTable } from './scripts-table';
-import { AdminSettings } from './admin-settings';
-import { BarChart3, Package, Settings, Shield } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { PaymentsView } from './payments-view';
+import { AdminProfileView } from './admin-profile-view';
+
+type AdminView = 'overview' | 'scripts' | 'payments' | 'profile';
+
+interface SidebarLink {
+  id: AdminView;
+  label: string;
+  icon: typeof BarChart3;
+}
+
+const sidebarLinks: SidebarLink[] = [
+  { id: 'overview', label: 'Visao Geral', icon: BarChart3 },
+  { id: 'scripts', label: 'Gerenciar Scripts', icon: Package },
+  { id: 'payments', label: 'Pagamentos & Loja', icon: CreditCard },
+  { id: 'profile', label: 'Meu Perfil', icon: User },
+];
 
 export function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeView, setActiveView] = useState<AdminView>('overview');
 
-  return (
-    <div className="min-h-screen bg-grid p-6">
-      <div className="container mx-auto max-w-7xl">
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
-            <Shield className="mr-1.5 h-3.5 w-3.5" />
-            Painel Administrativo
-          </Badge>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard Admin</h1>
-          <p className="mt-2 text-muted-foreground">Gerencie sua loja e acompanhe métricas de desempenho</p>
-        </motion.div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <TabsList className="glass mb-8 border border-border/30 bg-transparent p-1.5">
-              <TabsTrigger 
-                value="overview" 
-                className="gap-2 transition-all data-[state=active]:glow-primary-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Visão Geral
-              </TabsTrigger>
-              <TabsTrigger 
-                value="scripts"
-                className="gap-2 transition-all data-[state=active]:glow-primary-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Package className="h-4 w-4" />
-                Scripts
-              </TabsTrigger>
-              <TabsTrigger 
-                value="settings"
-                className="gap-2 transition-all data-[state=active]:glow-primary-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <Settings className="h-4 w-4" />
-                Configurações
-              </TabsTrigger>
-            </TabsList>
-          </motion.div>
-
-          <TabsContent value="overview" className="space-y-6">
+  const renderContent = () => {
+    switch (activeView) {
+      case 'overview':
+        return (
+          <div className="space-y-8">
+            {/* Header */}
+            <div>
+              <h1 className="text-2xl font-medium tracking-tight text-white">Visao Geral</h1>
+              <p className="mt-2 text-zinc-400">
+                Acompanhe as metricas de desempenho da sua loja
+              </p>
+            </div>
             <KPICards />
             <SalesChart />
-          </TabsContent>
-
-          <TabsContent value="scripts">
+          </div>
+        );
+      case 'scripts':
+        return (
+          <div className="space-y-8">
+            {/* Header */}
+            <div>
+              <h1 className="text-2xl font-medium tracking-tight text-white">Gerenciar Scripts</h1>
+              <p className="mt-2 text-zinc-400">
+                Adicione, edite e gerencie os scripts da sua loja
+              </p>
+            </div>
             <ScriptsTable />
-          </TabsContent>
+          </div>
+        );
+      case 'payments':
+        return <PaymentsView />;
+      case 'profile':
+        return <AdminProfileView />;
+      default:
+        return null;
+    }
+  };
 
-          <TabsContent value="settings">
-            <AdminSettings />
-          </TabsContent>
-        </Tabs>
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="fixed left-0 top-16 hidden h-[calc(100vh-4rem)] w-64 border-r border-zinc-800 bg-black md:block">
+          <div className="flex h-full flex-col">
+            {/* Sidebar Header */}
+            <div className="border-b border-zinc-800 px-6 py-5">
+              <div className="flex items-center gap-2">
+                <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-400">
+                  <Shield className="mr-1 h-3 w-3" />
+                  Admin
+                </Badge>
+              </div>
+              <h2 className="mt-3 text-sm font-semibold text-white">Central do Admin</h2>
+              <p className="mt-1 text-xs text-zinc-500">Gerencie sua loja</p>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 p-4">
+              <ul className="space-y-1">
+                {sidebarLinks.map((link) => {
+                  const isActive = activeView === link.id;
+                  return (
+                    <li key={link.id}>
+                      <button
+                        onClick={() => setActiveView(link.id)}
+                        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+                          isActive
+                            ? 'bg-zinc-900 text-white'
+                            : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-white'
+                        }`}
+                      >
+                        <link.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-emerald-400' : 'text-zinc-500 group-hover:text-zinc-300'}`} />
+                        <span className="flex-1 text-left">{link.label}</span>
+                        {isActive && (
+                          <ChevronRight className="h-4 w-4 text-emerald-400" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            {/* Sidebar Footer */}
+            <div className="border-t border-zinc-800 p-4">
+              <div className="rounded-lg bg-zinc-900/50 p-4">
+                <p className="text-xs text-zinc-500">Versao</p>
+                <p className="mt-1 text-sm text-zinc-300">UnderCode Admin v1.0</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Mobile Navigation */}
+        <div className="fixed left-0 right-0 top-16 z-40 border-b border-zinc-800 bg-black/95 backdrop-blur-sm md:hidden">
+          <div className="flex gap-1 overflow-x-auto p-2">
+            {sidebarLinks.map((link) => {
+              const isActive = activeView === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => setActiveView(link.id)}
+                  className={`flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm transition-all ${
+                    isActive
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-white'
+                  }`}
+                >
+                  <link.icon className={`h-4 w-4 ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`} />
+                  <span className="hidden sm:inline">{link.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="min-h-screen w-full pt-12 md:ml-64 md:pt-0">
+          <motion.div
+            key={activeView}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="p-6 md:p-8"
+          >
+            {renderContent()}
+          </motion.div>
+        </main>
       </div>
     </div>
   );
