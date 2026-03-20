@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Menu, X, ChevronDown, User, LogOut, LayoutDashboard } from 'lucide-react';
@@ -9,18 +10,18 @@ import { useAuth } from '@/contexts/auth-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
-  cartCount: number;
-  onCartClick: () => void;
-  onSignInClick: () => void;
-  onSignUpClick: () => void;
-  currentView: 'store' | 'support' | 'dashboard';
-  onViewChange: (view: 'store' | 'support' | 'dashboard') => void;
+  cartCount?: number;
+  onCartClick?: () => void;
+  onSignInClick?: () => void;
+  onSignUpClick?: () => void;
 }
 
-export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, currentView, onViewChange }: NavbarProps) {
+export function Navbar({ cartCount = 0, onCartClick, onSignInClick, onSignUpClick }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, userRole, logout } = useAuth();
 
   // Close dropdown when clicking outside
@@ -34,6 +35,24 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    setAvatarDropdownOpen(false);
+    router.push('/');
+  };
+
+  const handleDashboardClick = () => {
+    setAvatarDropdownOpen(false);
+    if (userRole === 'admin') {
+      router.push('/admin');
+    } else if (userRole === 'customer') {
+      router.push('/dashboard');
+    }
+  };
+
+  const isHomePage = pathname === '/';
+  const isSupportPage = pathname === '/support';
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-black/95 backdrop-blur-sm">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -46,29 +65,28 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
 
         {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
-          <button
-            onClick={() => onViewChange('store')}
+          <Link
+            href="/"
             className={`text-sm transition-colors ${
-              currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+              isHomePage && !isSupportPage ? 'text-white' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Inicio
-          </button>
-          <a
-            href="#store"
-            onClick={() => onViewChange('store')}
+          </Link>
+          <Link
+            href="/#store"
             className="text-sm text-zinc-400 transition-colors hover:text-white"
           >
             Loja
-          </a>
-          <button
-            onClick={() => onViewChange('support')}
+          </Link>
+          <Link
+            href="/support"
             className={`text-sm transition-colors ${
-              currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+              isSupportPage ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Suporte
-          </button>
+          </Link>
         </div>
 
         {/* Desktop Actions */}
@@ -136,36 +154,15 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
                       <p className="text-xs text-zinc-500">{user?.email}</p>
                     </div>
                     <div className="p-1">
-                      {userRole === 'customer' && (
-                        <button
-                          onClick={() => {
-                            onViewChange('dashboard');
-                            setAvatarDropdownOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Meu Painel
-                        </button>
-                      )}
-                      {userRole === 'admin' && (
-                        <button
-                          onClick={() => {
-                            onViewChange('dashboard');
-                            setAvatarDropdownOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Dashboard Admin
-                        </button>
-                      )}
                       <button
-                        onClick={() => {
-                          logout();
-                          setAvatarDropdownOpen(false);
-                          onViewChange('store');
-                        }}
+                        onClick={handleDashboardClick}
+                        className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                      >
+                        <LayoutDashboard className="h-4 w-4" />
+                        {userRole === 'admin' ? 'Dashboard Admin' : 'Meu Painel'}
+                      </button>
+                      <button
+                        onClick={handleLogout}
                         className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
                       >
                         <LogOut className="h-4 w-4" />
@@ -198,43 +195,45 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
             className="border-b border-zinc-800 bg-black md:hidden"
           >
             <div className="flex flex-col gap-4 px-6 py-4">
-              <button
-                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
                 className={`text-left text-sm transition-colors ${
-                  currentView === 'store' ? 'text-white' : 'text-zinc-400 hover:text-white'
+                  isHomePage ? 'text-white' : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 Inicio
-              </button>
-              <a
-                href="#store"
-                onClick={() => { onViewChange('store'); setMobileMenuOpen(false); }}
+              </Link>
+              <Link
+                href="/#store"
+                onClick={() => setMobileMenuOpen(false)}
                 className="text-sm text-zinc-400 transition-colors hover:text-white"
               >
                 Loja
-              </a>
-              <button
-                onClick={() => { onViewChange('support'); setMobileMenuOpen(false); }}
+              </Link>
+              <Link
+                href="/support"
+                onClick={() => setMobileMenuOpen(false)}
                 className={`text-left text-sm transition-colors ${
-                  currentView === 'support' ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+                  isSupportPage ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 Suporte
-              </button>
+              </Link>
               <div className="flex flex-col gap-2 pt-2">
                 {userRole === 'guest' ? (
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => { onSignInClick(); setMobileMenuOpen(false); }}
+                      onClick={() => { onSignInClick?.(); setMobileMenuOpen(false); }}
                       className="flex-1 border border-zinc-800 bg-transparent text-zinc-300"
                     >
                       Sign In
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => { onSignUpClick(); setMobileMenuOpen(false); }}
+                      onClick={() => { onSignUpClick?.(); setMobileMenuOpen(false); }}
                       className="flex-1 bg-white text-black"
                     >
                       Get Started
@@ -251,21 +250,19 @@ export function Navbar({ cartCount, onCartClick, onSignInClick, onSignUpClick, c
                         <p className="text-xs text-zinc-500">{user?.email}</p>
                       </div>
                     </div>
-                    {(userRole === 'customer' || userRole === 'admin') && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => { onViewChange('dashboard'); setMobileMenuOpen(false); }}
-                        className="justify-start border border-zinc-800 bg-transparent text-zinc-300"
-                      >
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        {userRole === 'admin' ? 'Dashboard Admin' : 'Meu Painel'}
-                      </Button>
-                    )}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => { logout(); setMobileMenuOpen(false); onViewChange('store'); }}
+                      onClick={() => { handleDashboardClick(); setMobileMenuOpen(false); }}
+                      className="justify-start border border-zinc-800 bg-transparent text-zinc-300"
+                    >
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      {userRole === 'admin' ? 'Dashboard Admin' : 'Meu Painel'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                       className="justify-start border border-zinc-800 bg-transparent text-zinc-400"
                     >
                       <LogOut className="mr-2 h-4 w-4" />

@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -13,13 +15,10 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface AdminHeaderProps {
-  onViewStore: () => void;
-}
-
-export function AdminHeader({ onViewStore }: AdminHeaderProps) {
+export function AdminHeader() {
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -35,34 +34,36 @@ export function AdminHeader({ onViewStore }: AdminHeaderProps) {
   const handleLogout = () => {
     logout();
     setAvatarDropdownOpen(false);
+    router.push('/');
   };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-sm">
       <div className="flex h-full items-center justify-between px-6">
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <Link href="/admin" className="flex items-center gap-3">
           <span className="text-xl font-semibold tracking-tight text-white">
             Under<span className="text-emerald-500">Code</span>
           </span>
           <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-xs text-emerald-400">
             Admin
           </Badge>
-        </div>
+        </Link>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
           {/* View Store Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onViewStore}
-            className="h-9 gap-2 border border-zinc-800 bg-transparent text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
-          >
-            <Store className="h-4 w-4" />
-            Ver Loja
-            <ExternalLink className="h-3 w-3" />
-          </Button>
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-2 border border-zinc-800 bg-transparent text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
+            >
+              <Store className="h-4 w-4" />
+              Ver Loja
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          </Link>
 
           {/* Avatar Dropdown */}
           <div className="relative" ref={dropdownRef}>

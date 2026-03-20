@@ -10,11 +10,7 @@ import { AdminOrders } from './admin-orders';
 import { AdminCustomers } from './admin-customers';
 import { AdminSettings } from './admin-settings';
 
-interface AdminLayoutProps {
-  onExitAdmin: () => void;
-}
-
-export function AdminLayout({ onExitAdmin }: AdminLayoutProps) {
+export function AdminLayout() {
   const [currentView, setCurrentView] = useState<AdminView>('dashboard');
 
   const renderContent = () => {
@@ -38,7 +34,7 @@ export function AdminLayout({ onExitAdmin }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <AdminHeader onViewStore={onExitAdmin} />
+      <AdminHeader />
       <AdminSidebar currentView={currentView} onViewChange={setCurrentView} />
       
       {/* Main Content Area */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export function AuthModals({
   onLoginOpenChange, 
   onRegisterOpenChange 
 }: AuthModalsProps) {
+  const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
   
@@ -60,6 +62,12 @@ export function AuthModals({
           ? 'Bem-vindo ao painel administrativo.' 
           : 'Bem-vindo de volta!',
       });
+      // Redirect based on role
+      if (role === 'admin') {
+        router.push('/admin');
+      } else if (role === 'customer') {
+        router.push('/dashboard');
+      }
     }, 800);
   };
 
@@ -105,6 +113,7 @@ export function AuthModals({
         title: 'Conta criada com sucesso!',
         description: 'Bem-vindo a Under Code!',
       });
+      router.push('/dashboard');
     }, 1000);
   };
 
