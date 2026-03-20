@@ -71,7 +71,7 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
       
       <div className="mx-auto max-w-7xl px-6 pt-24">
         {/* Section Header */}
-        <div className="mb-12 text-center">
+        <div className="mb-8 text-center">
           <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-emerald-500">
             Catalogo
           </span>
@@ -83,38 +83,39 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
           </p>
         </div>
 
-        {/* Toolbar */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1 sm:max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Buscar scripts por nome..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-zinc-700 focus:bg-zinc-900"
-            />
+        {/* Catalog Toolbar */}
+        <div className="mt-8 space-y-6">
+          {/* Search & Sort Bar */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            {/* Search Input */}
+            <div className="group relative flex-1 sm:max-w-2xl">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Buscar scripts por nome ou descricao..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900/40 pl-11 pr-4 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60"
+              />
+            </div>
+            
+            {/* Sort Dropdown */}
+            <div className="relative shrink-0">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="h-11 w-full cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/40 pl-4 pr-10 text-sm text-zinc-300 outline-none transition-all focus:border-zinc-700 focus:bg-zinc-900/60 sm:w-auto sm:min-w-[180px]"
+              >
+                <option value="popular">Mais Populares</option>
+                <option value="price-asc">Menor Preco</option>
+                <option value="price-desc">Maior Preco</option>
+                <option value="newest">Mais Recentes</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            </div>
           </div>
-          
-          {/* Sort Dropdown */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="w-full appearance-none rounded-lg border border-zinc-800 bg-zinc-900/50 py-2.5 pl-4 pr-10 text-sm text-white outline-none transition-colors focus:border-zinc-700 focus:bg-zinc-900 sm:w-auto"
-            >
-              <option value="popular">Mais Populares</option>
-              <option value="price-asc">Menor Preco</option>
-              <option value="price-desc">Maior Preco</option>
-              <option value="newest">Mais Recentes</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          </div>
-        </div>
 
-        {/* Category Pills */}
-        <div className="mb-10">
+          {/* Category Pills */}
           <CategoryPills
             categories={categories}
             selected={selectedCategory}
@@ -123,7 +124,7 @@ export function ProductGrid({ onAddToCart, onViewDetails }: ProductGridProps) {
         </div>
 
         {/* Results info */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-10 mt-6 flex items-center justify-between">
           <p className="text-sm text-zinc-500">
             Mostrando {filteredScripts.length} {filteredScripts.length === 1 ? 'script' : 'scripts'}
             {searchQuery && ` para "${searchQuery}"`}
