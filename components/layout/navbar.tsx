@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Menu, X, ChevronDown, User, LogOut, LayoutDashboard } from 'lucide-react';
@@ -17,26 +17,11 @@ interface NavbarProps {
 }
 
 export function Navbar({ cartCount = 0, onCartClick, onSignInClick, onSignUpClick }: NavbarProps) {
-  const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
-  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const pathname = usePathname();
   const { user, userRole, logout } = useAuth();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Handle navigation after mount
-  useEffect(() => {
-    if (mounted && pendingRoute) {
-      router.push(pendingRoute);
-      setPendingRoute(null);
-    }
-  }, [mounted, pendingRoute, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -52,15 +37,15 @@ export function Navbar({ cartCount = 0, onCartClick, onSignInClick, onSignUpClic
   const handleLogout = () => {
     logout();
     setAvatarDropdownOpen(false);
-    setPendingRoute('/');
+    window.location.href = '/';
   };
 
   const handleDashboardClick = () => {
     setAvatarDropdownOpen(false);
     if (userRole === 'admin') {
-      setPendingRoute('/admin');
+      window.location.href = '/admin';
     } else if (userRole === 'customer') {
-      setPendingRoute('/dashboard');
+      window.location.href = '/dashboard';
     }
   };
 

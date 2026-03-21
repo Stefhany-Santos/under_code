@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Mail, 
@@ -53,6 +54,7 @@ export function AuthModals({
   onLoginOpenChange, 
   onRegisterOpenChange 
 }: AuthModalsProps) {
+  const { login } = useAuth();
   const { toast } = useToast();
   
   // Login state
@@ -60,6 +62,7 @@ export function AuthModals({
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   // Register state
   const [registerName, setRegisterName] = useState('');
@@ -73,6 +76,7 @@ export function AuthModals({
     setLoginEmail('');
     setLoginPassword('');
     setShowLoginPassword(false);
+    setAuthError('');
   };
 
   const resetRegisterForm = () => {
@@ -85,6 +89,8 @@ export function AuthModals({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError('');
+    
     if (!loginEmail || !loginPassword) {
       toast({
         title: 'Campos obrigatorios',
@@ -95,14 +101,33 @@ export function AuthModals({
     }
     
     setIsLoggingIn(true);
+    
     setTimeout(() => {
-      setIsLoggingIn(false);
-      onLoginOpenChange(false);
-      resetLoginForm();
-      toast({
-        title: 'Autenticacao pendente',
-        description: 'Integracao com back-end em desenvolvimento.',
-      });
+      // Validate credentials
+      if (loginEmail === 'admin@admin.com' && loginPassword === 'admin') {
+        login('admin');
+        setIsLoggingIn(false);
+        onLoginOpenChange(false);
+        resetLoginForm();
+        toast({
+          title: 'Login realizado com sucesso!',
+          description: 'Bem-vindo ao painel administrativo.',
+        });
+        window.location.href = '/admin';
+      } else if (loginEmail === 'usuario@usuario.com' && loginPassword === 'usuario') {
+        login('customer');
+        setIsLoggingIn(false);
+        onLoginOpenChange(false);
+        resetLoginForm();
+        toast({
+          title: 'Login realizado com sucesso!',
+          description: 'Bem-vindo de volta!',
+        });
+        window.location.href = '/dashboard';
+      } else {
+        setIsLoggingIn(false);
+        setAuthError('Credenciais invalidas. Use admin@admin.com ou usuario@usuario.com para testar.');
+      }
     }, 1000);
   };
 
@@ -139,6 +164,7 @@ export function AuthModals({
 
   const switchToRegister = () => {
     onLoginOpenChange(false);
+    resetLoginForm();
     setTimeout(() => onRegisterOpenChange(true), 150);
   };
 
@@ -150,7 +176,10 @@ export function AuthModals({
   return (
     <>
       {/* Login Modal */}
-      <Dialog open={loginOpen} onOpenChange={onLoginOpenChange}>
+      <Dialog open={loginOpen} onOpenChange={(open) => {
+        if (!open) resetLoginForm();
+        onLoginOpenChange(open);
+      }}>
         <DialogContent className="border-zinc-800 bg-zinc-950 sm:max-w-md">
           <div className="absolute inset-0 -z-10 bg-black/90" />
           <DialogHeader>
@@ -170,7 +199,10 @@ export function AuthModals({
                   type="email"
                   placeholder="seu@email.com"
                   value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    setAuthError('');
+                  }}
                   autoComplete="email"
                   className="border-zinc-800 bg-zinc-900 pl-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
@@ -194,7 +226,10 @@ export function AuthModals({
                   type={showLoginPassword ? 'text' : 'password'}
                   placeholder="********"
                   value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onChange={(e) => {
+                    setLoginPassword(e.target.value);
+                    setAuthError('');
+                  }}
                   autoComplete="current-password"
                   className="border-zinc-800 bg-zinc-900 pl-10 pr-10 text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700"
                 />
@@ -207,6 +242,11 @@ export function AuthModals({
                 </button>
               </div>
             </div>
+
+            {/* Error message */}
+            {authError && (
+              <p className="text-sm text-red-400/80">{authError}</p>
+            )}
 
             {/* Cloudflare Turnstile Widget */}
             <TurnstileWidget />
@@ -230,7 +270,7 @@ export function AuthModals({
             </Button>
           </form>
 
-          <div className="pt-4 text-center">
+          <div className="space-y-2 pt-4 text-center">
             <p className="text-sm text-zinc-500">
               Nao tem uma conta?{' '}
               <button
@@ -240,6 +280,10 @@ export function AuthModals({
               >
                 Criar conta
               </button>
+            </p>
+            {/* Dev hint */}
+            <p className="text-xs text-zinc-600">
+              Dev: use admin@admin.com ou usuario@usuario.com (senha igual ao email)
             </p>
           </div>
         </DialogContent>
